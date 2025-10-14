@@ -213,7 +213,12 @@ export class DOMParser {
     })
   }
 
-  /// Parse a document from the content of a DOM node.
+  /**
+   * Parse a document from the content of a DOM node.
+   * @param dom 传进来的是通过text转换的dom的dom元素
+   * @param options 
+   * @returns 
+   */
   parse(dom: DOMNode, options: ParseOptions = {}): Node {
     let context = new ParseContext(this, options, false)
     context.addAll(dom, Mark.none, options.from, options.to)
@@ -586,9 +591,16 @@ class ParseContext {
     if (sync && this.sync(startIn)) this.open--
   }
 
-  // Add all child nodes between `startIndex` and `endIndex` (or the
-  // whole node, if not given). If `sync` is passed, use it to
-  // synchronize after every block element.
+  /**
+   * Add all child nodes between `startIndex` and `endIndex` (or the
+   * whole node, if not given). If `sync` is passed, use it to
+   * synchronize after every block element.
+   * 递归所有子元素，并与rules构建出的tags规则进行匹配
+   * @param parent 
+   * @param marks 
+   * @param startIndex 
+   * @param endIndex 
+   */
   addAll(parent: DOMNode, marks: readonly Mark[], startIndex?: number, endIndex?: number) {
     let index = startIndex || 0
     for (let dom = startIndex ? parent.childNodes[startIndex] : parent.firstChild,
@@ -807,7 +819,7 @@ function normalizeList(dom: DOMNode) {
   }
 }
 
-// Apply a CSS selector.
+// Apply a CSS selector. dom元素与parseHTML规则匹配
 function matches(dom: any, selector: string): boolean {
   return (dom.matches || dom.msMatchesSelector || dom.webkitMatchesSelector || dom.mozMatchesSelector).call(dom, selector)
 }
