@@ -238,6 +238,13 @@ export class DOMParser {
   }
 
   /// @internal
+  /**
+   * 通过标签匹配到对应的规则
+   * @param dom 
+   * @param context 
+   * @param after 
+   * @returns 
+   */
   matchTag(dom: DOMNode, context: ParseContext, after?: TagParseRule) {
     for (let i = after ? this.tags.indexOf(after) + 1 : 0; i < this.tags.length; i++) {
       let rule = this.tags[i]
@@ -462,6 +469,7 @@ class ParseContext {
       } else {
         value = value.replace(/\r\n?/g, "\n")
       }
+      // 插入文本节点
       if (value) this.insertNode(this.parser.schema.text(value), marks, !/\S/.test(value))
       this.findInText(dom)
     } else {
@@ -477,6 +485,7 @@ class ParseContext {
       this.localPreserveWS = true
     let name = dom.nodeName.toLowerCase(), ruleID: TagParseRule | undefined
     if (listTags.hasOwnProperty(name) && this.parser.normalizeLists) normalizeList(dom)
+      // this.parser.matchTag通过标签匹配对应的rule
     let rule = (this.options.ruleFromNode && this.options.ruleFromNode(dom)) ||
         (ruleID = this.parser.matchTag(dom, this, matchAfter))
     out:
@@ -585,6 +594,7 @@ class ParseContext {
       else if (typeof rule.contentElement == "function") contentDOM = rule.contentElement(dom)
       else if (rule.contentElement) contentDOM = rule.contentElement
       this.findAround(dom, contentDOM, true)
+      // 循环递归
       this.addAll(contentDOM, marks)
       this.findAround(dom, contentDOM, false)
     }
@@ -819,7 +829,7 @@ function normalizeList(dom: DOMNode) {
   }
 }
 
-// Apply a CSS selector. dom元素与parseHTML规则匹配
+// Apply a CSS selector. dom元素与parseHTML规则匹配; 原生匹配方法
 function matches(dom: any, selector: string): boolean {
   return (dom.matches || dom.msMatchesSelector || dom.webkitMatchesSelector || dom.mozMatchesSelector).call(dom, selector)
 }
