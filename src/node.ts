@@ -51,6 +51,7 @@ export class Node {
   /// amount of characters. For other leaf nodes, it is one. For
   /// non-leaf nodes, it is the size of the content plus two (the
   /// start and end token).
+  // 叶子节点长度:1  非叶子节点长度 = 子内容长度 + 2(开始标记+结束标记)
   get nodeSize(): number { return this.isLeaf ? 1 : 2 + this.content.size }
 
   /// The number of children that the node has.
@@ -367,7 +368,7 @@ export class TextNode extends Node {
   get textContent() { return this.text }
 
   textBetween(from: number, to: number) { return this.text.slice(from, to) }
-
+  // 文本节点，节点大小等于文本长度
   get nodeSize() { return this.text.length }
 
   mark(marks: readonly Mark[]) {

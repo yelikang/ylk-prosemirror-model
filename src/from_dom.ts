@@ -405,6 +405,7 @@ class NodeContext {
 }
 
 class ParseContext {
+  // 当前打开的节点层级索引
   open: number = 0
   find: {node: DOMNode, offset: number, pos?: number}[] | undefined
   needsBlock: boolean
@@ -677,6 +678,7 @@ class ParseContext {
   }
 
   // Open a node of the given type
+  // 进入非叶子节点时调用 enter/enterInner 把一个 NodeContext 压栈（父“占位”已建立）
   enterInner(type: NodeType, attrs: Attrs | null, marks: readonly Mark[],
              solid: boolean = false, preserveWS?: boolean | "full") {
     this.closeExtra()
@@ -699,6 +701,7 @@ class ParseContext {
 
   // Make sure all nodes above this.open are finished and added to
   // their parents
+  // 子节点会被依次解析并推入这个父的 content；当离开该父或需要同步时，通过 closeExtra 将子内容封装完成，再创建父节点压回上一层
   closeExtra(openEnd = false) {
     let i = this.nodes.length - 1
     if (i > this.open) {
