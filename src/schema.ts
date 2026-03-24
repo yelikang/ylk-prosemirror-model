@@ -71,7 +71,7 @@ export class NodeType {
     readonly name: string,
     /// A link back to the `Schema` the node type belongs to.
     readonly schema: Schema,
-    /// The spec that this type is based on
+    /// The spec that this type is based on (原始规格/数据)
     readonly spec: NodeSpec
   ) {
     this.groups = spec.group ? spec.group.split(" ") : []
