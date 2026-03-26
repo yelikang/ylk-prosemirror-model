@@ -283,6 +283,12 @@ export class DOMParser {
   }
 
   /// @internal
+  /**
+   * 解析schema中的rules
+   * 【DOM/HTML转换为Prosemirror Node文档时的解析规则表】 例如: p -> paragraph，在解析HTMLNode时，知道这个HTMLNode是p标签，就会转换成Promsemirror 的 paragraph节点
+   * @param schema 
+   * @returns 
+   */
   static schemaRules(schema: Schema) {
     let result: ParseRule[] = []
     function insert(rule: ParseRule) {
@@ -293,7 +299,7 @@ export class DOMParser {
       }
       result.splice(i, 0, rule)
     }
-
+    // schema.marks中的parseDOM,获取rule
     for (let name in schema.marks) {
       let rules = schema.marks[name].spec.parseDOM
       if (rules) rules.forEach(rule => {
@@ -302,6 +308,7 @@ export class DOMParser {
           rule.mark = name
       })
     }
+    // schema.marks中的parseDOM,获取rule
     for (let name in schema.nodes) {
       let rules = schema.nodes[name].spec.parseDOM
       if (rules) rules.forEach(rule => {
@@ -394,6 +401,7 @@ class NodeContext {
     let content = Fragment.from(this.content)
     if (!openEnd && this.match)
       content = content.append(this.match.fillBefore(Fragment.empty, true)!)
+    // 出栈时，当前NodeContext根据type:NodeType创建Node
     return this.type ? this.type.create(this.attrs, content, this.marks) : content
   }
 
@@ -566,14 +574,18 @@ class ParseContext {
   addElementByRule(dom: HTMLElement, rule: TagParseRule, marks: readonly Mark[], continueAfter?: TagParseRule) {
     let sync, nodeType
     if (rule.node) {
+      // 根据rule.node(Node名称,例如:tiptap Node.create的Node名称)，获取对应的NodeType
       nodeType = this.parser.schema.nodes[rule.node]
       if (!nodeType.isLeaf) {
+        // 不是叶子节点，入栈一个新的NodeContext，传入nodeType作为NodeContext的type
+        // 后续出栈时，再根据nodeType创建Node
         let inner = this.enter(nodeType, rule.attrs || null, marks, rule.preserveWhitespace)
         if (inner) {
           sync = true
           marks = inner
         }
       } else if (!this.insertNode(nodeType.create(rule.attrs), marks, dom.nodeName == "BR")) {
+        // 如果是叶子节点,直接通过nodeType.create创建一个Node
         this.leafFallback(dom, marks)
       }
     } else {
@@ -648,7 +660,14 @@ class ParseContext {
     return marks
   }
 
-  // Try to insert the given node, adjusting the context when needed.
+  /**
+   * Try to insert the given node, adjusting the context when needed.
+   * 插入一个Node
+   * @param node 
+   * @param marks 
+   * @param cautious 
+   * @returns 
+   */
   insertNode(node: Node, marks: readonly Mark[], cautious: boolean) {
     if (node.isInline && this.needsBlock && !this.top.type) {
       let block = this.textblockFromContext()
